@@ -79,11 +79,13 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 	 * Constructs the create session url for Onedrive
 	 * @param {string} fileName - The name of the file
 	 * @param {path} [path = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH] - The path for the upload
+	 * @param {drive} [drive = OneDriveLargeFileUploadTask.DEFAULT_DRIVE]  - The drive identifier/name for the upload
 	 * @returns The constructed create session url
 	 */
 	private static constructCreateSessionUrl(fileName: string,
-																					 drive: string = OneDriveLargeFileUploadTask.DEFAULT_DRIVE,
-																					 path: string = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH): string
+																					 path: string = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH,
+																					 drive: string = OneDriveLargeFileUploadTask.DEFAULT_DRIVE): string
+
 	{
 		fileName = fileName.trim();
 		path = path.trim();
@@ -100,11 +102,13 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 		// with encodeURI, special characters like # or % in the file name doesn't get encoded as desired
 
 		// drive was hardcoded to: /me/drive/root:
-		// which severely limits the usefulness of this class
-		return `${drive}${path
+		path = `${drive}${path
 			.split("/")
 			.map((p) => encodeURIComponent(p))
 			.join("/")}${encodeURIComponent(fileName)}:/createUploadSession`;
+
+		// which severely limits the usefulness of this class
+		return path;
 	}
 
 	/**
