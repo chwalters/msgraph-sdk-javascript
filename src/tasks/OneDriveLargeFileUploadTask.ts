@@ -27,6 +27,7 @@ import { getValidRangeSize } from "./OneDriveLargeFileUploadTaskUtil";
  * @property {UploadEventHandlers} [uploadEventHandlers] - UploadEventHandlers attached to an upload task
  */
 export interface OneDriveLargeFileUploadOptions {
+	drive: string;
 	fileName: string;
 	fileDescription?: string;
 	path?: string;
@@ -70,6 +71,7 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 	 * Default path for the file being uploaded
 	 */
 	private static DEFAULT_UPLOAD_PATH = "/";
+	private static DEFAULT_DRIVE = "/me/drive/root:"
 
 	/**
 	 * @private
@@ -79,7 +81,10 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 	 * @param {path} [path = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH] - The path for the upload
 	 * @returns The constructed create session url
 	 */
-	private static constructCreateSessionUrl(fileName: string, path: string = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH): string {
+	private static constructCreateSessionUrl(fileName: string,
+																					 drive: string = OneDriveLargeFileUploadTask.DEFAULT_DRIVE,
+																					 path: string = OneDriveLargeFileUploadTask.DEFAULT_UPLOAD_PATH): string
+	{
 		fileName = fileName.trim();
 		path = path.trim();
 		if (path === "") {
@@ -93,7 +98,10 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 		}
 		// we choose to encode each component of the file path separately because when encoding full URI
 		// with encodeURI, special characters like # or % in the file name doesn't get encoded as desired
-		return `/me/drive/root:${path
+
+		// drive was hardcoded to: /me/drive/root:
+		// which severely limits the usefulness of this class
+		return `${drive}${path
 			.split("/")
 			.map((p) => encodeURIComponent(p))
 			.join("/")}${encodeURIComponent(fileName)}:/createUploadSession`;
@@ -161,7 +169,7 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 		if (!client || !fileObject || !options) {
 			throw new GraphClientError("Please provide the Graph client instance, FileObject interface implementation and OneDriveLargeFileUploadOptions value");
 		}
-		const requestUrl = OneDriveLargeFileUploadTask.constructCreateSessionUrl(options.fileName, options.path);
+		const requestUrl = OneDriveLargeFileUploadTask.constructCreateSessionUrl(options.fileName, options.drive, options.path);
 		const uploadSessionPayload: OneDriveFileUploadSessionPayLoad = {
 			fileName: options.fileName,
 			fileDescription: options.fileDescription,
